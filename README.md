@@ -125,6 +125,7 @@ Documentacion detallada por ejercicio:
 | 2 - Sistema de descarga | [docs/ejercicio2.md](docs/ejercicio2.md) |
 | 3 - Consultas directas sobre Parquet | [docs/ejercicio3.md](docs/ejercicio3.md) |
 | 4 - Analisis exploratorio | [docs/ejercicio4.md](docs/ejercicio4.md) |
+| 5 - Incorporacion de 2024 | [docs/ejercicio5.md](docs/ejercicio5.md) |
 
 ## Como levantar el ambiente
 
@@ -178,7 +179,7 @@ Requisitos: Docker Desktop (o Docker Engine) con Docker Compose y Git.
 ## Como descargar los datos
 
 ```bash
-docker compose exec lab python scripts/download_data.py               # amarillos y verdes de 2026
+docker compose exec lab python scripts/download_data.py               # amarillos y verdes de 2024 y 2026
 docker compose exec lab python scripts/download_data.py --taxi green  # solo un tipo
 docker compose exec lab python scripts/download_data.py --anio 2026   # anios explicitos
 docker compose exec lab python scripts/download_data.py --verificar   # comparar local vs. servidor
@@ -195,8 +196,9 @@ docker compose exec lab python scripts/download_data.py --verificar   # comparar
   Parquet. `--verificar` repite esa validacion para todos los archivos y termina
   con codigo 1 si falta o difiere alguno.
 
-Estado al 8 de octubre de 2026: 16 archivos (enero a agosto 2026 de cada tipo,
-495.7 MiB); septiembre a diciembre aun no estan publicados por la TLC.
+Estado al 8 de octubre de 2026: 40 archivos (1.1 GiB): 2024 completo y enero a
+agosto de 2026 de cada tipo; septiembre a diciembre de 2026 aun no estan
+publicados por la TLC.
 
 Cambios realizados al script y verificacion de completitud:
 [docs/ejercicio2.md](docs/ejercicio2.md).
@@ -212,6 +214,17 @@ docker compose exec lab python scripts/run_sql.py sql/ex3_exploracion.sql
 
 # Ejercicio 4: analisis exploratorio
 docker compose exec lab python scripts/run_sql.py sql/ex4_analisis.sql
+
+# Ejercicio 5: validacion de la incorporacion de 2024
+docker compose exec lab python scripts/run_sql.py sql/ex5_validacion.sql
+```
+
+`--salida <nombre>` cambia el archivo de resultados (por ejemplo, para correr las
+consultas de un ejercicio anterior sobre todos los anios sin sobrescribir sus
+resultados originales):
+
+```bash
+docker compose exec lab python scripts/run_sql.py sql/ex4_analisis.sql --salida ex4_analisis_2024_2026
 ```
 
 Los notebooks `notebooks/ex3_exploracion.ipynb` y `notebooks/ex4_analisis.ipynb`
