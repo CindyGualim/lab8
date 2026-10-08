@@ -181,7 +181,7 @@ Requisitos: Docker Desktop (o Docker Engine) con Docker Compose y Git.
 ## Como descargar los datos
 
 ```bash
-docker compose exec lab python scripts/download_data.py               # amarillos y verdes de 2024 y 2026
+docker compose exec lab python scripts/download_data.py               # amarillos y verdes de 2024, 2025 y 2026
 docker compose exec lab python scripts/download_data.py --taxi green  # solo un tipo
 docker compose exec lab python scripts/download_data.py --anio 2026   # anios explicitos
 docker compose exec lab python scripts/download_data.py --verificar   # comparar local vs. servidor
@@ -198,8 +198,8 @@ docker compose exec lab python scripts/download_data.py --verificar   # comparar
   Parquet. `--verificar` repite esa validacion para todos los archivos y termina
   con codigo 1 si falta o difiere alguno.
 
-Estado al 8 de octubre de 2026: 40 archivos (1.1 GiB): 2024 completo y enero a
-agosto de 2026 de cada tipo; septiembre a diciembre de 2026 aun no estan
+Estado al 8 de octubre de 2026: 64 archivos (1.9 GiB): 2024 y 2025 completos y
+enero a agosto de 2026 de cada tipo; septiembre a diciembre de 2026 aun no estan
 publicados por la TLC.
 
 Cambios realizados al script y verificacion de completitud:
