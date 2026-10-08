@@ -117,17 +117,103 @@ debe permitir que una persona que no participo en el desarrollo pueda levantar e
 ambiente, descargar los datos, ejecutar el analisis, reproducir los benchmarks y
 generar los resultados principales.
 
+Documentacion detallada por ejercicio:
+
+| Ejercicio | Documento |
+|---|---|
+| 1 - Ambiente y estructura del proyecto | [docs/ejercicio1.md](docs/ejercicio1.md) |
+| 2 - Sistema de descarga | [docs/ejercicio2.md](docs/ejercicio2.md) |
+| 3 - Consultas directas sobre Parquet | [docs/ejercicio3.md](docs/ejercicio3.md) |
+
 ## Como levantar el ambiente
 
-<!-- TODO (Ejercicio 1.5) -->
+Requisitos: Docker Desktop (o Docker Engine) con Docker Compose y Git.
+
+1. Clonar el fork y entrar a la carpeta:
+
+   ```bash
+   git clone https://github.com/CindyGualim/lab8.git
+   cd lab8
+   ```
+
+2. Asegurarse de que Docker este corriendo (en Windows/macOS, abrir Docker
+   Desktop y esperar a que `docker info` responda sin error).
+
+3. Construir y levantar los servicios en segundo plano:
+
+   ```bash
+   docker compose up --build -d
+   ```
+
+   La primera vez tarda varios minutos. Despues basta con `docker compose up -d`.
+
+4. Verificar que ambos servicios esten arriba:
+
+   ```bash
+   docker compose ps                                   # lab8-lab y lab8-metabase en estado "Up"
+   curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8888/lab   # 200
+   curl -s http://127.0.0.1:3000/api/health            # {"status":"ok"}
+   ```
+
+   | Servicio | URL | Contenido |
+   |---|---|---|
+   | JupyterLab (`lab`) | <http://127.0.0.1:8888> | Python 3.11, DuckDB 1.5.5, pandas, pyarrow, matplotlib, requests |
+   | Metabase | <http://127.0.0.1:3000> | Tableros, con driver de DuckDB 1.5.5.0 |
+
+   Metabase tarda alrededor de un minuto en estar disponible la primera vez.
+
+5. Los comandos del proyecto se ejecutan dentro del contenedor `lab`:
+
+   ```bash
+   docker compose exec lab python scripts/download_data.py
+   ```
+
+   o desde una terminal de JupyterLab. Dentro del contenedor el proyecto esta en
+   `/workspace` y los datos en `/workspace/data`.
+
+6. Para detener el ambiente: `docker compose down` (los datos en `data/` se
+   conservan; agregar `-v` borra tambien la configuracion de Metabase).
 
 ## Como descargar los datos
 
-<!-- TODO (Ejercicios 2.6, 5.1 y 8.1) -->
+```bash
+docker compose exec lab python scripts/download_data.py               # amarillos y verdes de 2026
+docker compose exec lab python scripts/download_data.py --taxi green  # solo un tipo
+docker compose exec lab python scripts/download_data.py --anio 2026   # anios explicitos
+docker compose exec lab python scripts/download_data.py --verificar   # comparar local vs. servidor
+```
+
+- Los archivos se guardan en `data/raw/<tipo>/<anio>/<archivo>.parquet`.
+- Los anios por defecto estan en la constante `ANIOS` del script.
+- El script consulta que meses estan publicados; los que ya existen
+  localmente no se vuelven a descargar, por lo que puede ejecutarse cuantas veces
+  se quiera.
+- Cada descarga se valida contra el tamanio informado por el servidor y la firma
+  Parquet. `--verificar` repite esa validacion para todos los archivos y termina
+  con codigo 1 si falta o difiere alguno.
+
+Estado al 8 de octubre de 2026: 16 archivos (enero a agosto 2026 de cada tipo,
+495.7 MiB); septiembre a diciembre aun no estan publicados por la TLC.
+
+Cambios realizados al script y verificacion de completitud:
+[docs/ejercicio2.md](docs/ejercicio2.md).
 
 ## Como ejecutar el analisis
 
-<!-- TODO -->
+Las consultas estan en `sql/` y se ejecutan con el runner, que guarda la consulta,
+su tiempo y su resultado en `docs/resultados/<archivo>.md`:
+
+```bash
+# Ejercicio 3: exploracion directa sobre los archivos Parquet
+docker compose exec lab python scripts/run_sql.py sql/ex3_exploracion.sql
+```
+
+Tambien puede abrirse `notebooks/ex3_exploracion.ipynb` en JupyterLab, que
+ejecuta las mismas consultas del archivo SQL. Para regenerarlo con salidas:
+
+```bash
+docker compose exec lab jupyter nbconvert --to notebook --execute --inplace notebooks/ex3_exploracion.ipynb
+```
 
 ## Como reproducir los benchmarks
 
