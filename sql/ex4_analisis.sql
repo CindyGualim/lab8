@@ -28,7 +28,10 @@ WITH base AS (
            VendorID, passenger_count, trip_distance, RatecodeID, PULocationID, DOLocationID,
            payment_type, fare_amount, extra, mta_tax, tip_amount, tolls_amount,
            improvement_surcharge, total_amount, congestion_surcharge,
-           Airport_fee AS airport_fee, cbd_congestion_fee
+           Airport_fee AS airport_fee,
+           -- La cuota CBD empezo en enero de 2025: en archivos anteriores la columna
+           -- no existe (NULL por union_by_name) y equivale a 0 USD cobrados (Ejercicio 5.7).
+           coalesce(cbd_congestion_fee, 0) AS cbd_congestion_fee
     FROM read_parquet('data/raw/yellow/*/*.parquet', union_by_name = true, filename = true)
     UNION ALL
     SELECT 'green',
@@ -37,10 +40,11 @@ WITH base AS (
            VendorID, passenger_count, trip_distance, RatecodeID, PULocationID, DOLocationID,
            payment_type, fare_amount, extra, mta_tax, tip_amount, tolls_amount,
            improvement_surcharge, total_amount, congestion_surcharge,
-           0.0, cbd_congestion_fee
+           0.0, coalesce(cbd_congestion_fee, 0)
     FROM read_parquet('data/raw/green/*/*.parquet', union_by_name = true, filename = true)
 )
 SELECT *,
+       left(mes_archivo, 4)::INTEGER AS anio,
        date_diff('second', pickup, dropoff) / 60.0 AS duracion_min,
        CASE
            WHEN strftime(pickup, '%Y-%m') <> mes_archivo         THEN 'fecha fuera del mes del archivo'
