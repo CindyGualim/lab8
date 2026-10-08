@@ -127,6 +127,7 @@ Documentacion detallada por ejercicio:
 | 4 - Analisis exploratorio | [docs/ejercicio4.md](docs/ejercicio4.md) |
 | 5 - Incorporacion de 2024 | [docs/ejercicio5.md](docs/ejercicio5.md) |
 | 6 - Parquet versus tablas DuckDB | [docs/ejercicio6.md](docs/ejercicio6.md) |
+| 7 - Indicadores y tablero | [docs/ejercicio7.md](docs/ejercicio7.md) |
 
 ## Como levantar el ambiente
 
