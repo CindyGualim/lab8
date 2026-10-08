@@ -126,6 +126,7 @@ Documentacion detallada por ejercicio:
 | 3 - Consultas directas sobre Parquet | [docs/ejercicio3.md](docs/ejercicio3.md) |
 | 4 - Analisis exploratorio | [docs/ejercicio4.md](docs/ejercicio4.md) |
 | 5 - Incorporacion de 2024 | [docs/ejercicio5.md](docs/ejercicio5.md) |
+| 6 - Parquet versus tablas DuckDB | [docs/ejercicio6.md](docs/ejercicio6.md) |
 
 ## Como levantar el ambiente
 
@@ -238,7 +239,16 @@ docker compose exec lab jupyter nbconvert --to notebook --execute --inplace note
 
 ## Como reproducir los benchmarks
 
-<!-- TODO (Ejercicio 6) -->
+```bash
+docker compose stop metabase        # libera memoria y el archivo taxis.duckdb
+docker compose exec lab python scripts/benchmark.py
+```
+
+Para 1 mes, 1 anio, 2 anios y 3 anios de datos crea una base DuckDB, ejecuta las
+consultas de `sql/ex6_benchmark.sql` sobre los Parquet y sobre la tabla (mediana
+de 3 ejecuciones) y escribe la tabla de tiempos en `docs/resultados/ex6_benchmark.md`.
+Al terminar deja la base completa en `data/processed/taxis.duckdb`. Detalle y
+analisis en [docs/ejercicio6.md](docs/ejercicio6.md).
 
 ## Como generar los resultados principales
 
