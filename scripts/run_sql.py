@@ -4,10 +4,15 @@
 El archivo SQL se divide en bloques con comentarios "-- name: <titulo>".
 Las sentencias antes del primer bloque (p. ej. CREATE VIEW) se ejecutan como
 preparacion. Cada bloque se ejecuta por separado y su resultado se escribe en
-docs/resultados/<nombre-del-sql>.md junto con la consulta y el tiempo.
+docs/resultados/<nombre-del-sql>.md (o el nombre dado con --salida) junto con
+la consulta y el tiempo.
+
+Una linea "-- include: <archivo.sql>" antes del primer bloque ejecuta tambien la
+preparacion de ese archivo (sus vistas), para no duplicar definiciones.
 
 Uso:
     python scripts/run_sql.py sql/ex3_exploracion.sql
+    python scripts/run_sql.py sql/ex4_analisis.sql --salida ex4_analisis_2024_2026
     python scripts/run_sql.py sql/ex3_exploracion.sql --db data/processed/taxis.duckdb
 
 Las rutas de los archivos Parquet dentro del SQL son relativas a la raiz del
@@ -30,12 +35,19 @@ MAX_FILAS = 60          # filas mostradas por resultado
 MAX_ANCHO_CELDA = 60    # caracteres por celda
 
 PATRON_BLOQUE = re.compile(r"^--\s*name:\s*(.+)$", re.MULTILINE)
+PATRON_INCLUDE = re.compile(r"^--\s*include:\s*(\S+)\s*$", re.MULTILINE)
 
 
 def dividir_bloques(sql: str) -> tuple[str, list[tuple[str, str]]]:
-    """Devuelve (preparacion, [(titulo, consulta), ...])."""
+    """Devuelve (preparacion, [(titulo, consulta), ...]).
+
+    La preparacion incluye, primero, la de los archivos indicados con
+    "-- include:" (rutas relativas a la raiz del proyecto).
+    """
     partes = PATRON_BLOQUE.split(sql)
-    preparacion = partes[0]
+    incluidos = [dividir_bloques((RAIZ_PROYECTO / ruta).read_text(encoding="utf-8"))[0]
+                 for ruta in PATRON_INCLUDE.findall(partes[0])]
+    preparacion = "\n".join(incluidos + [partes[0]])
     bloques = [(partes[i].strip(), partes[i + 1].strip())
                for i in range(1, len(partes), 2)]
     return preparacion, bloques
@@ -71,6 +83,9 @@ def main() -> int:
     parser.add_argument("sql", type=Path, help="archivo .sql a ejecutar")
     parser.add_argument("--db", default=":memory:",
                         help="base DuckDB a usar (por defecto: en memoria)")
+    parser.add_argument("--salida",
+                        help="nombre del archivo de resultados en docs/resultados/ "
+                             "(por defecto: el nombre del .sql)")
     argumentos = parser.parse_args()
 
     ruta_sql = argumentos.sql.resolve()
@@ -110,7 +125,7 @@ def main() -> int:
                    f"Tiempo: {segundos:.2f} s", "", resultado, ""]
 
     DIR_RESULTADOS.mkdir(parents=True, exist_ok=True)
-    destino = DIR_RESULTADOS / f"{ruta_sql.stem}.md"
+    destino = DIR_RESULTADOS / f"{argumentos.salida or ruta_sql.stem}.md"
     destino.write_text("\n".join(salida), encoding="utf-8")
     print(f"\nResultados guardados en {destino.relative_to(RAIZ_PROYECTO).as_posix()}")
     return 1 if errores else 0
