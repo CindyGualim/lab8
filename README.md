@@ -128,6 +128,7 @@ Documentacion detallada por ejercicio:
 | 5 - Incorporacion de 2024 | [docs/ejercicio5.md](docs/ejercicio5.md) |
 | 6 - Parquet versus tablas DuckDB | [docs/ejercicio6.md](docs/ejercicio6.md) |
 | 7 - Indicadores y tablero | [docs/ejercicio7.md](docs/ejercicio7.md) |
+| 8 - Incorporacion de 2025 y analisis completo | [docs/ejercicio8.md](docs/ejercicio8.md) |
 
 ## Como levantar el ambiente
 
@@ -219,7 +220,15 @@ docker compose exec lab python scripts/run_sql.py sql/ex4_analisis.sql
 
 # Ejercicio 5: validacion de la incorporacion de 2024
 docker compose exec lab python scripts/run_sql.py sql/ex5_validacion.sql
+
+# Ejercicio 8: validacion de 2025 y comparacion de los tres anios
+docker compose exec lab python scripts/run_sql.py sql/ex8_tres_anios.sql --memoria 2GB --hilos 2
 ```
+
+Con los tres anios, algunas consultas con medianas o `DISTINCT` sobre todos los
+registros agotan la memoria del contenedor. `--memoria` y `--hilos` limitan a
+DuckDB para que terminen (mas lento); ver [docs/ejercicio8.md](docs/ejercicio8.md).
+Conviene detener Metabase mientras se ejecutan (`docker compose stop metabase`).
 
 `--salida <nombre>` cambia el archivo de resultados (por ejemplo, para correr las
 consultas de un ejercicio anterior sobre todos los anios sin sobrescribir sus
@@ -253,4 +262,28 @@ analisis en [docs/ejercicio6.md](docs/ejercicio6.md).
 
 ## Como generar los resultados principales
 
-<!-- TODO -->
+1. Descargar los datos: `docker compose exec lab python scripts/download_data.py`.
+2. Construir la base materializada (o correr el benchmark, que tambien la deja):
+
+   ```bash
+   docker compose stop metabase
+   docker compose exec lab python scripts/construir_db.py
+   ```
+
+3. Calcular los indicadores:
+
+   ```bash
+   docker compose exec lab python scripts/run_sql.py sql/ex7_indicadores.sql --db data/processed/taxis.duckdb --salida ex8_indicadores
+   ```
+
+4. Levantar Metabase y crear el tablero (solo la primera vez; despues basta con
+   reconstruir la base y refrescar el tablero):
+
+   ```bash
+   docker compose start metabase
+   docker compose exec lab python scripts/metabase_tablero.py
+   ```
+
+   El tablero "Taxis NYC - Indicadores" queda en <http://127.0.0.1:3000>
+   (usuario `admin@lab8.local`, contrasena `lab8-duckdb-2026`, solo para el
+   ambiente local; se pueden cambiar con `MB_EMAIL` y `MB_PASSWORD`).
