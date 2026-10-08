@@ -129,6 +129,7 @@ Documentacion detallada por ejercicio:
 | 6 - Parquet versus tablas DuckDB | [docs/ejercicio6.md](docs/ejercicio6.md) |
 | 7 - Indicadores y tablero | [docs/ejercicio7.md](docs/ejercicio7.md) |
 | 8 - Incorporacion de 2025 y analisis completo | [docs/ejercicio8.md](docs/ejercicio8.md) |
+| 9 - Discusion | [docs/ejercicio9.md](docs/ejercicio9.md) |
 
 ## Como levantar el ambiente
 
