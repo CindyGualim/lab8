@@ -14,6 +14,7 @@ Uso:
     python scripts/run_sql.py sql/ex3_exploracion.sql
     python scripts/run_sql.py sql/ex4_analisis.sql --salida ex4_analisis_2024_2026
     python scripts/run_sql.py sql/ex3_exploracion.sql --db data/processed/taxis.duckdb
+    python scripts/run_sql.py sql/ex4_analisis.sql --memoria 2GB --hilos 2
 
 Las rutas de los archivos Parquet dentro del SQL son relativas a la raiz del
 proyecto, por lo que el script siempre se ejecuta desde ahi.
@@ -86,6 +87,8 @@ def main() -> int:
     parser.add_argument("--salida",
                         help="nombre del archivo de resultados en docs/resultados/ "
                              "(por defecto: el nombre del .sql)")
+    parser.add_argument("--memoria", help="limite de memoria de DuckDB, p. ej. 2GB")
+    parser.add_argument("--hilos", type=int, help="hilos que usa DuckDB")
     argumentos = parser.parse_args()
 
     ruta_sql = argumentos.sql.resolve()
@@ -93,6 +96,12 @@ def main() -> int:
     preparacion, bloques = dividir_bloques(ruta_sql.read_text(encoding="utf-8"))
 
     conexion = duckdb.connect(argumentos.db)
+    # Con los tres anios algunas consultas agotan la memoria del contenedor;
+    # con menos memoria y menos hilos terminan, aunque mas lento (Ejercicio 8).
+    if argumentos.memoria:
+        conexion.execute(f"SET memory_limit = '{argumentos.memoria}'")
+    if argumentos.hilos:
+        conexion.execute(f"SET threads = {argumentos.hilos}")
     if preparacion.strip():
         conexion.execute(preparacion)
 
