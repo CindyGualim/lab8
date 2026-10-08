@@ -2,8 +2,8 @@
 """Descarga los archivos Parquet del NYC TLC Trip Record Data.
 
 Descarga los registros de viajes de taxis amarillos (yellow) y verdes (green)
-para los anios configurados en ANIOS (por defecto, 2026: el conjunto de datos
-inicial del laboratorio). Los anios tambien pueden indicarse con --anio.
+para los anios configurados en ANIOS (por defecto 2024 y 2026; 2026 fue el conjunto
+inicial y 2024 se agrego en el Ejercicio 5). Tambien pueden indicarse con --anio.
 
 Fuente oficial de los datos:
     https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page
@@ -40,7 +40,7 @@ import requests
 
 # Anios que se descargan cuando no se usa --anio. Para incorporar un anio nuevo
 # basta con agregarlo aqui (o pasarlo por linea de comandos).
-ANIOS = (2026,)
+ANIOS = (2024, 2026)
 TIPOS_TAXI = ("yellow", "green")
 URL_BASE = "https://d37ci6vzurychx.cloudfront.net/trip-data"
 URL_ZONAS = "https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv"
