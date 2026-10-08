@@ -28,6 +28,8 @@ Comportamiento:
     servidor y se valida la firma Parquet ("PAR1" al inicio y al final).
   - --verificar compara cada archivo local contra el servidor (tamanio y firma)
     y reporta los meses publicados que faltan localmente.
+  - Tambien descarga la tabla de zonas de la TLC (data/raw/taxi_zone_lookup.csv),
+    que traduce PULocationID / DOLocationID a borough y zona.
 """
 
 import argparse
@@ -41,6 +43,7 @@ import requests
 ANIOS = (2026,)
 TIPOS_TAXI = ("yellow", "green")
 URL_BASE = "https://d37ci6vzurychx.cloudfront.net/trip-data"
+URL_ZONAS = "https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv"
 
 # Ruta absoluta a partir de la ubicacion del script: funciona igual desde la
 # raiz del proyecto, desde scripts/ o dentro del contenedor (/workspace).
@@ -135,6 +138,23 @@ def descargar_archivo(url: str, destino: Path, esperado: int) -> int:
                 print(f"      intento {intento}/{INTENTOS} fallido ({error}); reintentando")
 
     raise requests.RequestException(f"no se pudo descargar {url}: {ultimo_error}")
+
+
+def descargar_zonas() -> None:
+    """Descarga la tabla de zonas de la TLC si no existe localmente."""
+    destino = DIR_DESTINO / "taxi_zone_lookup.csv"
+    if destino.exists() and destino.stat().st_size > 0:
+        print(f"\nZonas: {destino.relative_to(RAIZ_PROYECTO).as_posix()} ya existe, se omite")
+        return
+    try:
+        respuesta = requests.get(URL_ZONAS, timeout=TIEMPO_ESPERA)
+        respuesta.raise_for_status()
+    except requests.RequestException as error:
+        print(f"\nZonas: ERROR al descargar {URL_ZONAS}: {error}")
+        return
+    destino.parent.mkdir(parents=True, exist_ok=True)
+    destino.write_bytes(respuesta.content)
+    print(f"\nZonas: listo -> {destino.relative_to(RAIZ_PROYECTO).as_posix()}")
 
 
 def resumen_vacio() -> dict:
@@ -245,6 +265,8 @@ def main() -> int:
 
     if argumentos.verificar:
         return verificar(tipos, anios)
+
+    descargar_zonas()
 
     total = resumen_vacio()
     for tipo in tipos:

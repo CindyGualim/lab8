@@ -124,6 +124,7 @@ Documentacion detallada por ejercicio:
 | 1 - Ambiente y estructura del proyecto | [docs/ejercicio1.md](docs/ejercicio1.md) |
 | 2 - Sistema de descarga | [docs/ejercicio2.md](docs/ejercicio2.md) |
 | 3 - Consultas directas sobre Parquet | [docs/ejercicio3.md](docs/ejercicio3.md) |
+| 4 - Analisis exploratorio | [docs/ejercicio4.md](docs/ejercicio4.md) |
 
 ## Como levantar el ambiente
 
@@ -184,6 +185,8 @@ docker compose exec lab python scripts/download_data.py --verificar   # comparar
 ```
 
 - Los archivos se guardan en `data/raw/<tipo>/<anio>/<archivo>.parquet`.
+- Tambien se descarga la tabla de zonas de la TLC en `data/raw/taxi_zone_lookup.csv`
+  (traduce `PULocationID` / `DOLocationID` a borough y zona).
 - Los anios por defecto estan en la constante `ANIOS` del script.
 - El script consulta que meses estan publicados; los que ya existen
   localmente no se vuelven a descargar, por lo que puede ejecutarse cuantas veces
@@ -206,13 +209,18 @@ su tiempo y su resultado en `docs/resultados/<archivo>.md`:
 ```bash
 # Ejercicio 3: exploracion directa sobre los archivos Parquet
 docker compose exec lab python scripts/run_sql.py sql/ex3_exploracion.sql
+
+# Ejercicio 4: analisis exploratorio
+docker compose exec lab python scripts/run_sql.py sql/ex4_analisis.sql
 ```
 
-Tambien puede abrirse `notebooks/ex3_exploracion.ipynb` en JupyterLab, que
-ejecuta las mismas consultas del archivo SQL. Para regenerarlo con salidas:
+Los notebooks `notebooks/ex3_exploracion.ipynb` y `notebooks/ex4_analisis.ipynb`
+ejecutan las mismas consultas de los archivos SQL; el del Ejercicio 4 genera
+ademas las graficas en `docs/img/`. Para regenerarlos con salidas:
 
 ```bash
 docker compose exec lab jupyter nbconvert --to notebook --execute --inplace notebooks/ex3_exploracion.ipynb
+docker compose exec lab jupyter nbconvert --to notebook --execute --inplace notebooks/ex4_analisis.ipynb
 ```
 
 ## Como reproducir los benchmarks
